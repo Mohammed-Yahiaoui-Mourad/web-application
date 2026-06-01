@@ -1,4 +1,4 @@
-# Donneurs Match
+# Amal
 
 A hackathon-ready blood donation matching platform with four user types:
 - **Developer**: create and manage hospitals and hospital admin accounts.
