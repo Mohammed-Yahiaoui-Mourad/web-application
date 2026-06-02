@@ -1,212 +1,207 @@
-import React, { useEffect, useState } from 'react'
-import { 
-  ClipboardList, 
-  AlertCircle, 
-  Calendar, 
+import { useEffect, useState } from 'react'
+import {
+  Activity,
+  AlertTriangle,
+  CalendarClock,
+  Clock3,
   Droplets,
-  TrendingUp,
-  ChevronRight,
-  CheckCircle2,
-  Clock
+  ShieldAlert,
 } from 'lucide-react'
-import { api } from '../../lib/api'
-import useAuthStore from '../../store/useAuthStore'
-import Topbar from '../../components/Topbar'
 import KpiCard from '../../components/KpiCard'
+import Pagination from '../../components/Pagination'
+import Topbar from '../../components/Topbar'
+import { api } from '../../lib/api'
+import {
+  formatDateTime,
+  formatTime,
+  getAppointmentStatusMeta,
+  getSeverityMeta,
+} from '../../lib/hospitalUtils'
+import useAuthStore from '../../store/useAuthStore'
+
+const ITEMS_PER_PAGE = 4
 
 export default function AdminHopitalDashboard() {
-  const profile = useAuthStore((s) => s.profile)
-  const [stats, setStats] = useState({
-    active: 0,
-    urgent: 0,
-    upcoming: 0,
-    totalUnits: 0,
-  })
+  const profile = useAuthStore((state) => state.profile)
+  const [requests, setRequests] = useState<any[]>([])
   const [appointments, setAppointments] = useState<any[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
-    if (profile?.hopital_id) loadData()
+    if (profile?.hopital_id) {
+      loadData()
+    }
   }, [profile?.hopital_id])
 
   async function loadData() {
     try {
-      const [requestsListRaw, appointmentsListRaw] = await Promise.all([
+      const [requestData, appointmentData] = await Promise.all([
         api.get('/api/admin/requests'),
-        api.get('/api/admin/appointments')
+        api.get('/api/admin/appointments'),
       ])
 
-      const requestsList = Array.isArray(requestsListRaw) ? requestsListRaw : []
-      const appointmentsList = Array.isArray(appointmentsListRaw) ? appointmentsListRaw : []
-
-      const today = new Date().toISOString().split('T')[0]
-      const todayAppointments = appointmentsList.filter((a: any) => 
-        a.scheduled_time?.startsWith(today) && a.status === 'scheduled'
-      )
-
-      setAppointments(todayAppointments)
-
-      setStats({
-        active: requestsList.filter((r: any) => r.status === 'active' || r.status === 'partially_fulfilled').length,
-        urgent: requestsList.filter((r: any) => 
-          r.severity === 'urgent' || r.severity === 'critique' || r.severity === 'high' || r.severity === 'critical'
-        ).length,
-        upcoming: todayAppointments.length,
-        totalUnits: requestsList.reduce((sum: number, r: any) => sum + (r.units_needed || 0), 0),
-      })
-    } catch (err: any) {
-      console.error('loadData error:', err)
+      setRequests(Array.isArray(requestData) ? requestData : [])
+      setAppointments(Array.isArray(appointmentData) ? appointmentData : [])
+    } catch (error) {
+      console.error('loadData error:', error)
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <Topbar title="Tableau de bord" hideSearch hideActions />
+  const today = new Date().toISOString().split('T')[0]
+  const todayAppointments = appointments.filter(
+    (appointment) => appointment.scheduled_time?.startsWith(today) && appointment.status !== 'cancelled'
+  )
+  const urgentRequests = requests
+    .filter((request) => request.status !== 'fulfilled' && request.status !== 'cancelled')
+    .sort((first, second) => {
+      const firstWeight = first.severity === 'critical' ? 0 : first.severity === 'high' ? 1 : 2
+      const secondWeight = second.severity === 'critical' ? 0 : second.severity === 'high' ? 1 : 2
+      return firstWeight - secondWeight
+    })
+    .slice(0, 4)
 
-      {/* KPI Cards */}
-      <div className="mx-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <KpiCard
-          label="Demandes Actives"
-          value={stats.active}
-          subtext="en attente de sang"
-          icon={ClipboardList}
-          iconColor="text-blue-600"
-        />
-        <KpiCard
-          label="Cas Urgents"
-          value={stats.urgent}
-          subtext="priorités absolues"
-          icon={AlertCircle}
-          iconColor="text-red-600"
-          textColor="text-red-600"
-        />
-        <KpiCard
-          label="Donneurs du Jour"
-          value={stats.upcoming}
-          subtext="rendez-vous aujourd'hui"
-          icon={Calendar}
-          iconColor="text-green-600"
-        />
-        <KpiCard
-          label="Poches Requises"
-          value={stats.totalUnits}
-          subtext="total des unités"
-          icon={Droplets}
-          iconColor="text-orange-600"
-        />
+  const safePage = Math.min(currentPage, Math.max(1, Math.ceil(todayAppointments.length / ITEMS_PER_PAGE)))
+  const paginatedAppointments = todayAppointments.slice((safePage - 1) * ITEMS_PER_PAGE, safePage * ITEMS_PER_PAGE)
+
+  const stats = {
+    active: requests.filter((request) => request.status === 'active' || request.status === 'partially_fulfilled').length,
+    urgent: requests.filter((request) => request.severity === 'critical' || request.severity === 'high').length,
+    upcoming: todayAppointments.length,
+    totalUnits: requests.reduce((sum, request) => sum + (request.units_needed || 0), 0),
+  }
+
+  return (
+    <div className="space-y-6 pb-8">
+      <Topbar
+        title="Tableau de bord"
+        subtitle="Vue opérationnelle de la journée : besoins critiques, rendez-vous en cours et charge transfusionnelle restante."
+        hideSearch
+        hideActions
+      />
+
+      <div className="mx-8 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiCard label="Demandes actives" value={stats.active} subtext="Dossiers encore ouverts" icon={Activity} iconColor="text-sky-700" />
+        <KpiCard label="Cas urgents" value={stats.urgent} subtext="Interventions prioritaires" icon={ShieldAlert} iconColor="text-rose-700" textColor="text-rose-700" />
+        <KpiCard label="Rendez-vous du jour" value={stats.upcoming} subtext="Collectes à suivre aujourd’hui" icon={CalendarClock} iconColor="text-emerald-700" />
+        <KpiCard label="Unités requises" value={stats.totalUnits} subtext="Volume restant à couvrir" icon={Droplets} iconColor="text-amber-700" />
       </div>
 
-      <div className="mx-8 grid grid-cols-1 gap-6 lg:grid-cols-3 pb-8">
-        {/* Today's Appointments */}
-        <div className="lg:col-span-2 rounded-[32px] bg-white p-8 shadow-sm border border-slate-100 flex flex-col">
-          <div className="mb-6 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <Clock className="text-[#E8293A]" size={20} />
-              Donneurs attendus aujourd'hui
-            </h2>
-            <span className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-2 text-xs font-bold text-slate-600 uppercase tracking-widest">
-              {appointments.length} Rendez-vous
-            </span>
+      <div className="mx-8 grid gap-6 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,1fr)]">
+        <section className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Aujourd’hui</p>
+              <h2 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Collectes programmées</h2>
+            </div>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700">
+              {todayAppointments.length} rendez-vous suivis
+            </div>
           </div>
 
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="pb-5 px-4">Donneur</th>
-                  <th className="pb-5 px-4">Groupe</th>
-                  <th className="pb-5 px-4">Heure</th>
-                  <th className="pb-5 px-4">Statut</th>
-                  <th className="pb-5 px-4 text-right">Action</th>
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left">
+              <thead className="bg-slate-50/70">
+                <tr className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <th className="px-6 py-4">Donneur</th>
+                  <th className="px-6 py-4">Heure</th>
+                  <th className="px-6 py-4">Salle</th>
+                  <th className="px-6 py-4">Statut</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-50">
-                {appointments.map((app) => (
-                  <tr key={app.id} className="group hover:bg-slate-50/50 transition-colors">
-                    <td className="py-5 px-4">
-                      <div className="font-bold text-slate-900">{app.donor_name}</div>
-                    </td>
-                    <td className="py-5 px-4">
-                      <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-xs font-bold text-[#E8293A] border border-red-100">
-                        {app.blood_type}
-                      </span>
-                    </td>
-                    <td className="py-5 px-4">
-                      <div className="text-sm font-medium text-slate-600 flex items-center gap-2 uppercase tracking-tight font-bold">
-                        <Clock size={14} className="text-slate-400" />
-                        {app.scheduled_time ? new Date(app.scheduled_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
-                      </div>
-                    </td>
-                    <td className="py-5 px-4">
-                      <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-[11px] font-bold text-blue-600 border border-blue-100">
-                        <CheckCircle2 size={12} />
-                        Confirmé
-                      </span>
-                    </td>
-                    <td className="py-5 px-4 text-right">
-                      <button className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95 uppercase tracking-widest">
-                        Valider Don
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-                {appointments.length === 0 && (
-                  <tr>
-                    <td colSpan={5} className="py-12 text-center">
-                      <div className="flex flex-col items-center">
-                         <div className="h-12 w-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-200 mb-3">
-                           <Calendar size={24} />
-                         </div>
-                         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Aucun donneur attendu</p>
-                      </div>
-                    </td>
-                  </tr>
-                )}
+              <tbody className="divide-y divide-slate-200">
+                {paginatedAppointments.map((appointment) => {
+                  const status = getAppointmentStatusMeta(appointment.status)
+                  return (
+                    <tr key={appointment.id} className="hover:bg-slate-50/80">
+                      <td className="px-6 py-5">
+                        <div className="font-semibold text-slate-950">{appointment.donor_name}</div>
+                        <div className="mt-1 text-sm text-slate-500">{appointment.blood_type}</div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="font-medium text-slate-900">{formatTime(appointment.scheduled_time)}</div>
+                        <div className="mt-1 text-sm text-slate-500">{formatDateTime(appointment.scheduled_time)}</div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <div className="font-medium text-slate-900">{appointment.room}</div>
+                        <div className="mt-1 text-sm text-slate-500">{appointment.assigned_nurse}</div>
+                      </td>
+                      <td className="px-6 py-5">
+                        <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${status.tone}`}>
+                          {status.label}
+                        </span>
+                      </td>
+                    </tr>
+                  )
+                })}
               </tbody>
             </table>
           </div>
-        </div>
 
-        {/* Hospital Metrics / Quick Actions */}
+          {todayAppointments.length === 0 ? (
+            <div className="px-6 py-16 text-center text-sm font-semibold text-slate-600">
+              Aucun rendez-vous planifié aujourd’hui.
+            </div>
+          ) : null}
+
+          <Pagination
+            currentPage={safePage}
+            pageSize={ITEMS_PER_PAGE}
+            totalItems={todayAppointments.length}
+            onPageChange={setCurrentPage}
+            label="rendez-vous"
+          />
+        </section>
+
         <div className="space-y-6">
-          <div className="rounded-[32px] bg-[#E8293A] p-8 text-white shadow-lg shadow-red-200 relative overflow-hidden">
-            <Droplets className="absolute -right-8 -bottom-8 text-white opacity-10" size={160} />
-            <div className="relative z-10">
-              <h3 className="mb-3 text-xl font-bold flex items-center gap-2">
-                <AlertCircle size={24} />
-                Urgence Sang O-
-              </h3>
-              <p className="mb-8 text-sm opacity-90 leading-relaxed font-medium">Stock critique. 3 demandes en attente nécessitent une intervention immédiate.</p>
-              <button className="w-full rounded-2xl bg-white py-4 text-sm font-black text-[#E8293A] transition hover:bg-red-50 active:scale-95 flex items-center justify-center gap-2 shadow-xl shadow-red-900/20 uppercase tracking-widest">
-                Lancer Alerte Massive
-                <ChevronRight size={18} />
-              </button>
-            </div>
-          </div>
-
-          <div className="rounded-[32px] bg-white p-8 shadow-sm border border-slate-100">
-            <h3 className="mb-6 text-lg font-black text-slate-900 flex items-center gap-2 uppercase tracking-widest">
-              <TrendingUp size={20} className="text-green-500" />
-              Statistiques Hebdo
-            </h3>
-            <div className="space-y-6">
+          <section className="rounded-[28px] border border-rose-200 bg-rose-50/80 p-6 shadow-sm">
+            <div className="flex items-start gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white text-[#c73b42] shadow-sm">
+                <AlertTriangle size={22} />
+              </div>
               <div>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Dons réalisés</span>
-                  <span className="text-xl font-black text-slate-900">42</span>
-                </div>
-                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-                  <div className="h-full w-[80%] rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.4)] transition-all duration-1000"></div>
-                </div>
-              </div>
-              <div className="flex items-center justify-between pt-2 border-t border-slate-50">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Objectif mensuel</span>
-                <div className="flex items-center gap-1.5 text-xs font-black text-green-600 bg-green-50 px-2.5 py-1 rounded-lg">
-                  <TrendingUp size={14} />
-                  +12%
-                </div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-rose-700">Alerte transfusionnelle</p>
+                <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Maintenir la couverture O- et A-</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-700">
+                  Les demandes critiques ouvertes concernent des groupes à tension élevée. Prioriser les rappels sur les profils déjà qualifiés.
+                </p>
               </div>
             </div>
-          </div>
+          </section>
+
+          <section className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">File critique</p>
+                <h3 className="mt-2 text-xl font-semibold tracking-tight text-slate-950">Demandes à traiter</h3>
+              </div>
+              <Clock3 size={20} className="text-slate-400" />
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {urgentRequests.map((request) => {
+                const severity = getSeverityMeta(request.severity)
+                return (
+                  <div key={request.id} className="rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-4">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-slate-950">{request.patient_name}</p>
+                        <p className="mt-1 text-sm text-slate-600">{request.department} • {request.blood_type}</p>
+                      </div>
+                      <span className={`rounded-full border px-3 py-1 text-xs font-semibold ${severity.tone}`}>
+                        {severity.label}
+                      </span>
+                    </div>
+                    <p className="mt-3 text-sm text-slate-600">
+                      {request.units_needed} poche(s) restantes • échéance {formatDateTime(request.required_by)}
+                    </p>
+                  </div>
+                )
+              })}
+              {urgentRequests.length === 0 ? (
+                <p className="text-sm text-slate-500">Aucune demande prioritaire en attente.</p>
+              ) : null}
+            </div>
+          </section>
         </div>
       </div>
     </div>

@@ -21,22 +21,22 @@ export default function KpiCard({
   iconColor = 'text-[#E8293A]'
 }: KpiCardProps) {
   return (
-    <div className={`rounded-[32px] border border-slate-100 ${bgColor} p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5`}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
-          <p className={`text-3xl font-black ${textColor}`}>{value}</p>
+    <div className={`rounded-[28px] border border-slate-200 ${bgColor} p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/70`}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="space-y-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">{label}</p>
+          <p className={`text-3xl font-semibold tracking-tight ${textColor}`}>{value}</p>
         </div>
         {Icon && (
-          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 ${iconColor} border border-slate-100 shadow-sm`}>
+          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 ${iconColor} border border-slate-200 shadow-sm`}>
             <Icon size={24} strokeWidth={2.5} />
           </div>
         )}
       </div>
 
       {subtext && (
-        <div className="mt-4 pt-4 border-t border-slate-50">
-          <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-tight">
+        <div className="mt-5 border-t border-slate-200 pt-4">
+          <p className="text-sm text-slate-600">
             {subtext}
           </p>
         </div>

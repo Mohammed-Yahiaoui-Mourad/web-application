@@ -1,158 +1,175 @@
-import React, { useState } from 'react'
-import { 
-  AlertCircle, 
-  CheckCircle2, 
-  XCircle, 
-  Clock, 
-  ChevronLeft, 
-  ChevronRight,
-  Send,
-  Check
-} from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { AlertCircle, Check, Eye, Send } from 'lucide-react'
+import Pagination from './Pagination'
+import {
+  formatDateTime,
+  getRequestStatusMeta,
+  getSeverityMeta,
+} from '../lib/hospitalUtils'
 
-const ITEMS_PER_PAGE = 8
+const ITEMS_PER_PAGE = 6
 
 export default function RequestsTable({
   requests = [],
   patients = {},
   filters = {},
   onAction,
+  onSelect,
+  selectedRequestId,
 }: any) {
+  let filtered = requests
+
+  if (filters.bloodType) {
+    filtered = filtered.filter((request: any) => request.blood_type === filters.bloodType)
+  }
+
+  if (filters.severity) {
+    filtered = filtered.filter((request: any) => request.severity === filters.severity)
+  }
+
+  if (filters.status) {
+    filtered = filtered.filter((request: any) => request.status === filters.status)
+  }
+
   const [currentPage, setCurrentPage] = useState(1)
 
-  const getSeverityBadge = (severity: string) => {
-    if (severity === 'critique' || severity === 'critical') return { 
-      bg: 'bg-red-50', 
-      text: 'text-red-700', 
-      border: 'border-red-100',
-      icon: <AlertCircle size={12} />,
-      label: 'Critique' 
-    }
-    if (severity === 'urgent' || severity === 'high') return { 
-      bg: 'bg-orange-50', 
-      text: 'text-orange-700', 
-      border: 'border-orange-100',
-      icon: <AlertCircle size={12} />,
-      label: 'Urgent' 
-    }
-    return { 
-      bg: 'bg-blue-50', 
-      text: 'text-blue-700', 
-      border: 'border-blue-100',
-      icon: <CheckCircle2 size={12} />,
-      label: 'Normal' 
-    }
-  }
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [filters, requests.length])
 
-  const getStatusBadge = (status: string) => {
-    if (status === 'active' || status === 'pending') return { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-100', label: 'Actif', icon: <Clock size={12} /> }
-    if (status === 'fulfilled') return { bg: 'bg-green-50', text: 'text-green-700', border: 'border-green-100', label: 'Complété', icon: <CheckCircle2 size={12} /> }
-    if (status === 'cancelled') return { bg: 'bg-slate-50', text: 'text-slate-700', border: 'border-slate-100', label: 'Annulé', icon: <XCircle size={12} /> }
-    return { bg: 'bg-slate-50', text: 'text-slate-600', border: 'border-slate-100', label: status, icon: <Clock size={12} /> }
-  }
-
-  // Filter requests
-  let filtered = requests
-  if (filters.bloodType) {
-    filtered = filtered.filter((r: any) => r.blood_type === filters.bloodType)
-  }
-  if (filters.severity) {
-    filtered = filtered.filter((r: any) => r.severity === filters.severity)
-  }
-  if (filters.status) {
-    filtered = filtered.filter((r: any) => r.status === filters.status)
-  }
-
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE)
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE))
+  const safePage = Math.min(currentPage, totalPages)
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE
   const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
-    <div className="rounded-[32px] border border-slate-100 bg-white p-8 shadow-sm">
-      {/* Header */}
-      <div className="mb-8 flex items-center justify-between">
+    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+      <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h2 className="text-xl font-bold text-slate-900">Demandes de sang</h2>
-          <p className="text-sm text-slate-500 font-medium">Gestion et assignment des priorités patient</p>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-950">Demandes de transfusion</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Ouvrez une demande pour consulter le dossier patient, la priorité et les actions possibles.
+          </p>
         </div>
-        <span className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-2 text-xs font-bold text-slate-600 uppercase tracking-widest">
-          {filtered.length} total
-        </span>
+
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-right">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Volume filtré</p>
+          <p className="text-lg font-semibold text-slate-950">{filtered.length} dossiers</p>
+        </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
-          <thead>
-            <tr className="border-b border-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              <th className="pb-5 px-4">Patient</th>
-              <th className="pb-5 px-4">Groupe</th>
-              <th className="pb-5 px-4">Unités</th>
-              <th className="pb-5 px-4">Urgence</th>
-              <th className="pb-5 px-4">Statut</th>
-              <th className="pb-5 px-4 text-right">Actions</th>
+        <table className="min-w-full text-left">
+          <thead className="bg-slate-50/70">
+            <tr className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              <th className="px-6 py-4">Patient</th>
+              <th className="px-6 py-4">Service</th>
+              <th className="px-6 py-4">Besoins</th>
+              <th className="px-6 py-4">Priorité</th>
+              <th className="px-6 py-4">Échéance</th>
+              <th className="px-6 py-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-50 text-sm">
-            {paginated.map((req: any) => {
-              const patient = patients[req.patient_id]
-              const severityBadge = getSeverityBadge(req.severity)
-              const statusBadge = getStatusBadge(req.status)
+          <tbody className="divide-y divide-slate-200">
+            {paginated.map((request: any) => {
+              const patient = patients[request.patient_id]
+              const severity = getSeverityMeta(request.severity)
+              const status = getRequestStatusMeta(request.status)
 
               return (
-                <tr key={req.id} className="group hover:bg-slate-50/50 transition-colors">
-                  <td className="py-5 px-4">
-                    <div className="font-bold text-slate-900">
-                      {patient?.first_name || req.patient_name || 'Patient'} {patient?.last_name || ''}
+                <tr
+                  key={request.id}
+                  onClick={() => onSelect?.(request.id)}
+                  className={`cursor-pointer transition ${
+                    selectedRequestId === request.id ? 'bg-sky-50/80' : 'hover:bg-slate-50/80'
+                  }`}
+                >
+                  <td className="px-6 py-5">
+                    <div className="space-y-1">
+                      <div className="font-semibold text-slate-950">
+                        {patient?.first_name || request.patient_name || 'Patient'} {patient?.last_name || ''}
+                      </div>
+                      <div className="text-sm text-slate-500">
+                        {request.id} • {status.label}
+                      </div>
                     </div>
-                    <div className="text-[11px] text-slate-400 font-bold uppercase tracking-tight">ID: {req.patient_id || 'N/A'}</div>
                   </td>
-                  <td className="py-5 px-4">
-                    <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-red-50 text-xs font-bold text-[#E8293A] border border-red-100">
-                      {req.blood_type}
-                    </span>
-                  </td>
-                  <td className="py-5 px-4">
-                    <div className="font-bold text-slate-900 flex items-center gap-1.5">
-                      <div className="h-1.5 w-1.5 rounded-full bg-red-400" />
-                      {req.units_needed || '—'} poche(s)
+                  <td className="px-6 py-5">
+                    <div className="space-y-1">
+                      <div className="font-medium text-slate-900">{request.department || 'Service inconnu'}</div>
+                      <div className="text-sm text-slate-500">{request.room || 'Salle non définie'}</div>
                     </div>
                   </td>
-                  <td className="py-5 px-4">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border ${severityBadge.bg} ${severityBadge.text} ${severityBadge.border}`}>
-                      {severityBadge.icon}
-                      {severityBadge.label}
-                    </span>
+                  <td className="px-6 py-5">
+                    <div className="flex items-center gap-3">
+                      <span className="inline-flex rounded-2xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-[#c73b42]">
+                        {request.blood_type}
+                      </span>
+                      <div className="space-y-1">
+                        <div className="font-semibold text-slate-900">{request.units_needed} poche(s)</div>
+                        <div className="text-sm text-slate-500">{request.donors_confirmed} donneur(s) confirmé(s)</div>
+                      </div>
+                    </div>
                   </td>
-                  <td className="py-5 px-4">
-                    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-bold border ${statusBadge.bg} ${statusBadge.text} ${statusBadge.border}`}>
-                      {statusBadge.icon}
-                      {statusBadge.label}
-                    </span>
+                  <td className="px-6 py-5">
+                    <div className="space-y-2">
+                      <span
+                        className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${severity.tone}`}
+                      >
+                        {severity.label}
+                      </span>
+                      <div
+                        className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${status.tone}`}
+                      >
+                        {status.label}
+                      </div>
+                    </div>
                   </td>
-                  <td className="py-5 px-4 text-right">
+                  <td className="px-6 py-5">
+                    <div className="space-y-1 text-sm">
+                      <div className="font-medium text-slate-900">{formatDateTime(request.required_by)}</div>
+                      <div className="text-slate-500">{request.attending_physician}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-5">
                     <div className="flex justify-end gap-2">
-                      {req.status === 'active' || req.status === 'pending' || req.status === 'partially_fulfilled' ? (
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          onSelect?.(request.id)
+                        }}
+                        className="flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-950"
+                      >
+                        <Eye size={14} />
+                        Voir
+                      </button>
+
+                      {(request.status === 'active' || request.status === 'partially_fulfilled') && (
                         <>
                           <button
                             type="button"
-                            onClick={() => onAction?.(req.id, 'assign')}
-                            className="flex items-center gap-2 rounded-xl bg-[#E8293A] px-3.5 py-2 text-xs font-bold text-white shadow-md shadow-red-200 transition hover:bg-red-700 active:scale-95"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              onAction?.(request.id, 'assign')
+                            }}
+                            className="flex items-center gap-2 rounded-2xl bg-[#c73b42] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#b02d35]"
                           >
                             <Send size={14} />
                             Alerter
                           </button>
                           <button
                             type="button"
-                            onClick={() => onAction?.(req.id, 'validate')}
-                            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3.5 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95"
+                            onClick={(event) => {
+                              event.stopPropagation()
+                              onAction?.(request.id, 'validate')
+                            }}
+                            className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300"
                           >
-                            <Check size={14} className="text-green-500" />
+                            <Check size={14} />
                             Compléter
                           </button>
                         </>
-                      ) : (
-                        <span className="text-xs font-bold text-slate-300 uppercase tracking-widest px-4">Archivé</span>
                       )}
                     </div>
                   </td>
@@ -163,39 +180,22 @@ export default function RequestsTable({
         </table>
       </div>
 
-      {filtered.length === 0 && (
-        <div className="py-20 text-center">
-          <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Aucune demande correspondante</p>
-        </div>
-      )}
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="mt-8 flex items-center justify-between pt-6 border-t border-slate-50">
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-             Demande {startIndex + 1} - {Math.min(startIndex + ITEMS_PER_PAGE, filtered.length)} sur {filtered.length}
-          </p>
-          <div className="flex gap-2">
-            <button 
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              disabled={currentPage === 1}
-              className="h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft size={18} />
-            </button>
-            <div className="flex items-center px-4 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700">
-              {currentPage} / {totalPages}
-            </div>
-            <button 
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              disabled={currentPage === totalPages}
-              className="h-10 w-10 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition disabled:opacity-30 disabled:cursor-not-allowed"
-            >
-              <ChevronRight size={18} />
-            </button>
+      {filtered.length === 0 ? (
+        <div className="px-6 py-16 text-center">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-3xl bg-slate-100 text-slate-400">
+            <AlertCircle size={24} />
           </div>
+          <p className="mt-4 text-sm font-semibold text-slate-700">Aucune demande ne correspond aux filtres actifs.</p>
         </div>
-      )}
+      ) : null}
+
+      <Pagination
+        currentPage={safePage}
+        pageSize={ITEMS_PER_PAGE}
+        totalItems={filtered.length}
+        onPageChange={setCurrentPage}
+        label="demandes"
+      />
     </div>
   )
 }
