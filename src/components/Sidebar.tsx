@@ -83,8 +83,12 @@ export default function Sidebar() {
                 }`
               }
             >
-              <link.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-              {link.label}
+              {({ isActive }) => (
+                <>
+                  <link.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                  {link.label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
