@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import {
   AlertTriangle,
+  Check,
   CircleAlert,
   Clock3,
   Droplets,
@@ -25,6 +26,7 @@ export default function ManageRequests() {
   const [patients, setPatients] = useState<Record<string, any>>({})
   const [filters, setFilters] = useState<any>({})
   const [message, setMessage] = useState('')
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -62,14 +64,23 @@ export default function ManageRequests() {
     }
   }
 
+  const showToast = (text: string, type: 'success' | 'error') => {
+    setToast({ text, type })
+    window.setTimeout(() => setToast(null), 3600)
+  }
+
   async function alertDonors(requestId: string) {
     setSubmitting(true)
     try {
       const response = await api.post(`/api/admin/requests/${requestId}/broadcast`)
-      setMessage(`${response.data || 0} donneur(s) contacté(s) pour cette demande.`)
+      const successMessage = `${response.data || 0} donneur(s) contacté(s) pour cette demande.`
+      setMessage(successMessage)
+      showToast(successMessage, 'success')
       await loadAll()
     } catch (error: any) {
-      setMessage(error?.message || 'Échec de la diffusion de l’alerte.')
+      const errorMessage = error?.message || 'Échec de la diffusion de l’alerte.'
+      setMessage(errorMessage)
+      showToast(errorMessage, 'error')
     } finally {
       setSubmitting(false)
     }
@@ -79,10 +90,14 @@ export default function ManageRequests() {
     setSubmitting(true)
     try {
       await api.patch(`/api/admin/requests/${requestId}/status?status_update=${status}`)
-      setMessage(status === 'fulfilled' ? 'La demande a été marquée comme complétée.' : 'Statut mis à jour.')
+      const successMessage = status === 'fulfilled' ? 'La demande a été marquée comme complétée.' : 'Statut mis à jour.'
+      setMessage(successMessage)
+      showToast(successMessage, 'success')
       await loadAll()
     } catch (error: any) {
-      setMessage(error?.message || 'Impossible de mettre à jour le statut.')
+      const errorMessage = error?.message || 'Impossible de mettre à jour le statut.'
+      setMessage(errorMessage)
+      showToast(errorMessage, 'error')
     } finally {
       setSubmitting(false)
     }
@@ -165,6 +180,7 @@ export default function ManageRequests() {
           onAction={handleAction}
           onSelect={setSelectedRequestId}
           selectedRequestId={selectedRequestId}
+          disabled={submitting}
         />
       </div>
 
@@ -180,28 +196,31 @@ export default function ManageRequests() {
         onClose={() => setSelectedRequestId(null)}
         footer={
           selectedRequest ? (
-            <div className="flex flex-wrap justify-end gap-3">
-              {(selectedRequest.status === 'active' || selectedRequest.status === 'partially_fulfilled') && (
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => handleAction(selectedRequest.id, 'assign')}
-                  className="flex items-center gap-2 rounded-2xl bg-[#c73b42] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b02d35] disabled:opacity-60"
-                >
-                  <Send size={16} />
-                  Alerter les donneurs
-                </button>
-              )}
-              {(selectedRequest.status === 'active' || selectedRequest.status === 'partially_fulfilled') && (
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => handleAction(selectedRequest.id, 'validate')}
-                  className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 disabled:opacity-60"
-                >
-                  Marquer comme complétée
-                </button>
-              )}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:gap-3">
+                {(selectedRequest.status === 'active' || selectedRequest.status === 'partially_fulfilled') && (
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => handleAction(selectedRequest.id, 'assign')}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#c73b42] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b02d35] disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  >
+                    <Send size={16} />
+                    Alerter les donneurs
+                  </button>
+                )}
+                {(selectedRequest.status === 'active' || selectedRequest.status === 'partially_fulfilled') && (
+                  <button
+                    type="button"
+                    disabled={submitting}
+                    onClick={() => handleAction(selectedRequest.id, 'validate')}
+                    className="flex w-full items-center justify-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  >
+                    <Check size={16} />
+                    Marquer comme complétée
+                  </button>
+                )}
+              </div>
             </div>
           ) : null
         }
@@ -266,6 +285,25 @@ export default function ManageRequests() {
           </div>
         ) : null}
       </DetailDrawer>
+
+      {toast ? (
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm rounded-3xl border px-5 py-4 shadow-2xl transition-all duration-300 ease-out sm:max-w-md"
+          style={{
+            backgroundColor: toast.type === 'success' ? 'rgba(236, 253, 245, 0.98)' : 'rgba(255, 241, 242, 0.98)',
+            borderColor: toast.type === 'success' ? '#34d399' : '#fca5a5',
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <span className={`mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-2xl ${toast.type === 'success' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+              {toast.type === 'success' ? '✓' : '!'}
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-slate-950">{toast.type === 'success' ? 'Succès' : 'Erreur'}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-700">{toast.text}</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

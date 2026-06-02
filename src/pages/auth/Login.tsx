@@ -47,7 +47,7 @@ export default function Login() {
   return (
     <div className="mx-auto max-w-md">
       <h1 className="mb-2 text-2xl font-bold text-[#1a1917]">Connexion</h1>
-      <p className="mb-6 text-gray-600">Accédez à votre espace BloodMatch</p>
+      <p className="mb-6 text-gray-600">Accédez à votre espace AMAL</p>
 
       <form onSubmit={handleSubmit} className="space-y-4 rounded-xl bg-white p-6 shadow">
         {error && (

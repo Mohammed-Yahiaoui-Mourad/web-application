@@ -2,7 +2,7 @@ import { Activity, AlertTriangle, Droplet, X } from 'lucide-react'
 
 export default function FilterBar({ filters = {}, onFilterChange, bloodTypes = [] }: any) {
   return (
-    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
+    <div className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm card-smooth hover-float fade-in-up">
       <div className="grid gap-4 lg:grid-cols-4">
         <div className="space-y-2">
           <label className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -66,7 +66,7 @@ export default function FilterBar({ filters = {}, onFilterChange, bloodTypes = [
               onFilterChange?.('severity', null)
               onFilterChange?.('status', null)
             }}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-white"
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-700 transition-all duration-300 ease-out hover:border-slate-300 hover:bg-white hover:-translate-y-0.5 hover:shadow-sm"
           >
             <X size={16} />
             Réinitialiser les filtres

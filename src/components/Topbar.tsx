@@ -17,7 +17,7 @@ export default function Topbar({
   }
 
   return (
-    <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 px-8 py-5 backdrop-blur-xl">
+    <div className="sticky top-0 z-20 border-b border-slate-200/80 bg-white/85 px-8 py-5 backdrop-blur-xl transition-all duration-300 ease-out">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
         <div className="flex items-start gap-4">
           <button
@@ -50,7 +50,7 @@ export default function Topbar({
                 placeholder="Rechercher un donneur, une demande..."
                 value={searchQuery}
                 onChange={handleSearch}
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-800 outline-none transition focus:border-sky-300 focus:bg-white"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-800 outline-none transition-all duration-300 ease-out focus:border-sky-300 focus:bg-white focus:shadow-lg hover:shadow-sm"
               />
             </div>
           ) : null}
@@ -60,7 +60,7 @@ export default function Topbar({
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:text-slate-900"
+                  className="relative flex h-11 w-11 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 transition-all duration-300 ease-out hover:border-slate-300 hover:text-slate-900 hover:-translate-y-0.5 hover:shadow-sm"
                   aria-label="Notifications"
                 >
                   <Bell size={19} />

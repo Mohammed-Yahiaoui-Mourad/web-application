@@ -16,6 +16,7 @@ export default function RequestsTable({
   onAction,
   onSelect,
   selectedRequestId,
+  disabled = false,
 }: any) {
   let filtered = requests
 
@@ -43,7 +44,7 @@ export default function RequestsTable({
   const paginated = filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
-    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm card-smooth hover-float fade-in-up">
       <div className="flex flex-col gap-4 border-b border-slate-200 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-slate-950">Demandes de transfusion</h2>
@@ -79,9 +80,16 @@ export default function RequestsTable({
               return (
                 <tr
                   key={request.id}
-                  onClick={() => onSelect?.(request.id)}
-                  className={`cursor-pointer transition ${
-                    selectedRequestId === request.id ? 'bg-sky-50/80' : 'hover:bg-slate-50/80'
+                  onClick={(event) => {
+                    const target = event.target as HTMLElement
+                    if (!target.closest('button')) {
+                      onSelect?.(request.id)
+                    }
+                  }}
+                  className={`cursor-pointer transition-all duration-300 ease-out ${
+                    selectedRequestId === request.id
+                      ? 'bg-sky-50/80 shadow-inner'
+                      : 'hover:bg-slate-50/80 hover:-translate-y-0.5 hover:shadow-sm'
                   }`}
                 >
                   <td className="px-6 py-5">
@@ -149,22 +157,24 @@ export default function RequestsTable({
                         <>
                           <button
                             type="button"
+                            disabled={disabled}
                             onClick={(event) => {
                               event.stopPropagation()
-                              onAction?.(request.id, 'assign')
+                              if (!disabled) onAction?.(request.id, 'assign')
                             }}
-                            className="flex items-center gap-2 rounded-2xl bg-[#c73b42] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#b02d35]"
+                            className="flex items-center gap-2 rounded-2xl bg-[#c73b42] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#b02d35] disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             <Send size={14} />
                             Alerter
                           </button>
                           <button
                             type="button"
+                            disabled={disabled}
                             onClick={(event) => {
                               event.stopPropagation()
-                              onAction?.(request.id, 'validate')
+                              if (!disabled) onAction?.(request.id, 'validate')
                             }}
-                            className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300"
+                            className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             <Check size={14} />
                             Compléter

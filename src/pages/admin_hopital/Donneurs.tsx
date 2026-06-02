@@ -29,6 +29,13 @@ export default function Donneurs() {
   const [selectedDonorId, setSelectedDonorId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [submitting, setSubmitting] = useState(false)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [contactConfirmation, setContactConfirmation] = useState<{
+    id: string
+    name: string
+    phone: string
+  } | null>(null)
 
   useEffect(() => {
     loadData()
@@ -37,6 +44,26 @@ export default function Donneurs() {
   useEffect(() => {
     setCurrentPage(1)
   }, [search])
+
+  const showToast = (text: string, type: 'success' | 'error') => {
+    setToast({ text, type })
+    window.setTimeout(() => setToast(null), 3600)
+  }
+
+  async function copyPhoneNumber(phone: string) {
+    try {
+      await navigator.clipboard.writeText(phone)
+      showToast('Numéro copié dans le presse-papiers.', 'success')
+    } catch (error) {
+      console.error('copyPhoneNumber error:', error)
+      showToast('Impossible de copier le numéro.', 'error')
+    }
+  }
+
+  function dialPhoneNumber(phone: string) {
+    const sanitized = phone.replace(/\D+/g, '')
+    window.location.href = `tel:${sanitized}`
+  }
 
   async function loadData() {
     try {
@@ -53,8 +80,37 @@ export default function Donneurs() {
       setSelectedDonorId((current) =>
         current && nextDonors.some((donor) => donor.id === current) ? current : null
       )
-    } catch (error) {
+    } catch (error: any) {
       console.error('loadData error:', error)
+      showToast('Impossible de charger les donneurs.', 'error')
+    }
+  }
+
+  async function contactDonor(donorId: string) {
+    setSubmitting(true)
+    try {
+      await api.post(`/api/admin/donors/${donorId}/contact`)
+      showToast('Le donneur a été contacté avec succès.', 'success')
+      await loadData()
+    } catch (error: any) {
+      showToast(error?.message || 'Impossible de contacter le donneur.', 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  async function createAppointment(donorId: string) {
+    setSubmitting(true)
+    try {
+      await api.post(`/api/admin/donors/${donorId}/appointments`, {
+        scheduled_time: new Date().toISOString(),
+      })
+      showToast('Rendez-vous créé avec succès.', 'success')
+      await loadData()
+    } catch (error: any) {
+      showToast(error?.message || 'Impossible de créer le rendez-vous.', 'error')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -212,16 +268,27 @@ export default function Donneurs() {
         onClose={() => setSelectedDonorId(null)}
         footer={
           selectedDonor ? (
-            <div className="flex flex-wrap justify-end gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
               <button
                 type="button"
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
+                disabled={submitting}
+                onClick={() => selectedDonor && createAppointment(selectedDonor.id)}
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 Créer un rendez-vous
               </button>
               <button
                 type="button"
-                className="flex items-center gap-2 rounded-2xl bg-[#c73b42] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b02d35]"
+                disabled={submitting}
+                onClick={() => {
+                  if (!selectedDonor) return
+                  setContactConfirmation({
+                    id: selectedDonor.id,
+                    name: selectedDonor.full_name,
+                    phone: selectedDonor.phone,
+                  })
+                }}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#c73b42] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b02d35] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 <PhoneCall size={16} />
                 Appeler le donneur
@@ -304,6 +371,66 @@ export default function Donneurs() {
           </div>
         ) : null}
       </DetailDrawer>
+
+      {contactConfirmation ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 p-4">
+          <div className="w-full max-w-md rounded-[32px] bg-white p-6 shadow-2xl">
+            <h2 className="text-lg font-semibold text-slate-950">Confirmer l’appel</h2>
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Voulez-vous appeler <span className="font-semibold text-slate-900">{contactConfirmation.name}</span> au
+              numéro <span className="font-semibold text-slate-900">{contactConfirmation.phone}</span> ?
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={async () => {
+                  await copyPhoneNumber(contactConfirmation.phone)
+                  setContactConfirmation(null)
+                }}
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 sm:w-auto"
+              >
+                Copier le numéro
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  dialPhoneNumber(contactConfirmation.phone)
+                  setContactConfirmation(null)
+                }}
+                className="w-full rounded-2xl bg-[#c73b42] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b02d35] sm:w-auto"
+              >
+                Appeler maintenant
+              </button>
+              <button
+                type="button"
+                onClick={() => setContactConfirmation(null)}
+                className="w-full rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-200 sm:w-auto"
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {toast ? (
+        <div className="fixed bottom-6 right-6 z-50 max-w-sm rounded-3xl border px-5 py-4 shadow-2xl transition-all duration-300 ease-out"
+          style={{
+            backgroundColor: toast.type === 'success' ? 'rgba(236, 253, 245, 0.98)' : 'rgba(254, 242, 242, 0.98)',
+            borderColor: toast.type === 'success' ? '#34d399' : '#fca5a5',
+          }}
+        >
+          <div className="flex items-start gap-3">
+            <span className={`mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-2xl ${toast.type === 'success' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+              {toast.type === 'success' ? '✓' : '!'}
+            </span>
+            <div>
+              <p className="text-sm font-semibold text-slate-950">{toast.type === 'success' ? 'Succès' : 'Erreur'}</p>
+              <p className="mt-1 text-sm leading-6 text-slate-700">{toast.text}</p>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   )
 }

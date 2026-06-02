@@ -1,4 +1,4 @@
-# AMAL🩸
+# BloodMatch 🩸
 
 Plateforme de don de sang en temps réel — React + Vite + FastAPI.
 

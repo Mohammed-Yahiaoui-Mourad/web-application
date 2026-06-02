@@ -8,7 +8,6 @@ import {
   History, 
   UserPlus,
   LogOut,
-  Droplet
 } from 'lucide-react'
 import useAuthStore from '../store/useAuthStore'
 import { getInitials } from '../lib/hospitalUtils'
@@ -43,11 +42,11 @@ export default function Sidebar() {
     <aside className="flex h-screen w-[264px] flex-col border-r border-slate-200/80 bg-white/96 px-4 py-5 backdrop-blur-xl">
       <div className="space-y-5">
         <div className="px-1">
-          <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm">
+          <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm card-smooth hover-float">
             <div className="flex items-center gap-3">
-              <span className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 text-[#c73b42] shadow-sm">
-                <Droplet size={20} fill="currentColor" />
-              </span>
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-50 shadow-sm">
+                <img src="/amal-logo.png" alt="AMAL logo" className="h-8 w-8 object-contain" />
+              </div>
               <div className="min-w-0">
                 <p className="truncate text-[1.2rem] font-semibold tracking-tight text-slate-950">Amal Blood</p>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
@@ -70,10 +69,10 @@ export default function Sidebar() {
                 to={link.to}
                 end={link.to === '/admin-hopital'}
                 className={({ isActive }) =>
-                  `group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm font-semibold transition ${
+                  `group flex items-center gap-3 rounded-2xl border px-3 py-3 text-sm font-semibold transition-all duration-300 ease-out ${
                     isActive
                       ? 'border-slate-900 bg-slate-900 text-white shadow-lg shadow-slate-900/10'
-                      : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900'
+                      : 'border-transparent text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900 hover:-translate-y-0.5 hover:shadow-sm'
                   }`
                 }
               >
@@ -108,7 +107,7 @@ export default function Sidebar() {
 
       {profile ? (
         <div className="mt-auto space-y-3 px-1 pt-5">
-          <div className="rounded-[22px] border border-slate-200 bg-white px-3 py-3 shadow-sm">
+          <div className="rounded-[22px] border border-slate-200 bg-white px-3 py-3 shadow-sm card-smooth hover-float">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-sm font-semibold text-slate-700">
                 {initials}

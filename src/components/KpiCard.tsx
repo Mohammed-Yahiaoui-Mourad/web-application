@@ -21,7 +21,7 @@ export default function KpiCard({
   iconColor = 'text-[#E8293A]'
 }: KpiCardProps) {
   return (
-    <div className={`rounded-[28px] border border-slate-200 ${bgColor} p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/70`}>
+    <div className={`rounded-[28px] border border-slate-200 ${bgColor} p-6 shadow-sm card-smooth hover-float`}>
       <div className="flex items-start justify-between gap-4">
         <div className="space-y-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500">{label}</p>

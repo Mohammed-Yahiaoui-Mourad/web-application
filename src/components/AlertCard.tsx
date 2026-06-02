@@ -7,7 +7,7 @@ export default function AlertCard({ alert, request, hospital, onAccept, onDeclin
   const disabled = alert.status !== 'pending' || expired || loading
 
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm card-smooth">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <SeverityBadge severity={request?.severity} />
         {request?.blood_type && <BloodTypePill type={request.blood_type} />}

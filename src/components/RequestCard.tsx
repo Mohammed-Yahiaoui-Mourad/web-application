@@ -3,7 +3,7 @@ import BloodTypePill from './BloodTypePill'
 
 export default function RequestCard({ request, patient, actions }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm card-smooth">
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <SeverityBadge severity={request.severity} />
         <BloodTypePill type={request.blood_type} />

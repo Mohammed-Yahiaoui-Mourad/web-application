@@ -7,10 +7,11 @@ export default function Navbar() {
   const home = profile ? ROLE_ROUTES[profile.role] || '/' : '/'
 
   return (
-    <nav className="border-b border-gray-200 bg-white px-4 py-3 shadow-sm">
+    <nav className="border-b border-gray-200 bg-white px-4 py-3 shadow-sm transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-slate-200/40">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
-        <Link to={home} className="flex items-center gap-2 text-xl font-bold text-[#E8293A]">
-          <span>🩸</span> BloodMatch
+        <Link to={home} className="flex items-center gap-3 text-xl font-bold text-[#E8293A]">
+          <img src="/amal-logo.png" alt="AMAL logo" className="h-9 w-9 rounded-xl object-contain" />
+          <span>AMAL</span>
         </Link>
         {profile && (
           <div className="flex items-center gap-4">

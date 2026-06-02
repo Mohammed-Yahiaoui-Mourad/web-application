@@ -1,0 +1,19 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-labelledby="logoTitle">
+  <title id="logoTitle">AMAL logo</title>
+  <defs>
+    <linearGradient id="grad-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f02121" />
+      <stop offset="100%" stop-color="#9b0108" />
+    </linearGradient>
+    <linearGradient id="grad-shadow" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.92" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.25" />
+    </linearGradient>
+  </defs>
+  <rect width="120" height="120" rx="30" fill="#fff" />
+  <path d="M60 18C33 50 24 65 24 85c0 13 11 23 24 23h4c13 0 24-10 24-23 0-20-9-35-22-67Z" fill="url(#grad-bg)" />
+  <path d="M60 26c11 18 16 25 16 35 0 7-5 13-12 13h-8c-7 0-12-6-12-13 0-10 5-17 16-35Z" fill="#fff" />
+  <path d="M60 38c5.5 8.5 8.5 12.5 8.5 18 0 4.4-3.6 8-8 8s-8-3.6-8-8c0-5.5 3-9.5 8-18Z" fill="url(#grad-shadow)" />
+  <path d="M58 76c-1.4 0-2.5 1.1-2.5 2.5S56.6 81 58 81s2.5-1.1 2.5-2.5S59.4 76 58 76Z" fill="#fff" opacity="0.8" />
+  <path d="M46 86s6-6 14-6 14 6 14 6" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.35" />
+</svg>
