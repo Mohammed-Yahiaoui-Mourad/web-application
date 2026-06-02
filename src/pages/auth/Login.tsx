@@ -45,54 +45,151 @@ export default function Login() {
   }
 
   return (
-    <div className="mx-auto max-w-md">
-      <h1 className="mb-2 text-2xl font-bold text-[#1a1917]">Connexion</h1>
-      <p className="mb-6 text-gray-600">Accédez à votre espace AMAL</p>
+    <div className="space-y-6 relative">
+      <div className="absolute left-2/3 top-8 hidden h-24 w-24 rounded-full bg-[#93c5fd]/20 blur-3xl sm:block" />
+      <div className="absolute -right-16 top-24 h-44 w-44 rounded-full bg-[#fb7185]/15 blur-3xl" />
+      <div className="relative overflow-hidden rounded-[2.25rem] border border-white/80 bg-white/95 p-8 shadow-[0_40px_120px_-40px_rgba(15,23,42,0.18)] ring-1 ring-slate-200/80 backdrop-blur-xl page-transition">
+        <div className="absolute -left-16 -top-16 h-40 w-40 rounded-full bg-[#fb7185]/20 blur-3xl" />
+        <div className="absolute -right-16 bottom-0 h-44 w-44 rounded-full bg-cyan-400/10 blur-3xl" />
 
-      <form onSubmit={handleSubmit} className="space-y-4 rounded-xl bg-white p-6 shadow">
-        {error && (
-          <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</div>
-        )}
-        <div>
-          <label className="mb-1 block text-sm font-medium">Email</label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#E8293A] focus:outline-none focus:ring-1 focus:ring-[#E8293A]"
-          />
+        <div className="relative space-y-4">
+          <p className="inline-flex rounded-full bg-[#eef2ff] px-4 py-1 text-xs uppercase tracking-[0.28em] text-[#4338ca] shadow-sm shadow-slate-200/50">
+            Espace administrateur
+          </p>
+          <div className="space-y-2">
+            <h1 className="text-4xl font-semibold tracking-tight text-slate-950">Connexion</h1>
+            <p className="max-w-xl text-sm leading-7 text-slate-600">
+              Accédez à votre espace AMAL avec une interface fluide et sécurisée.
+            </p>
+          </div>
         </div>
-        <div>
-          <label className="mb-1 block text-sm font-medium">Mot de passe</label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-[#E8293A] focus:outline-none focus:ring-1 focus:ring-[#E8293A]"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-lg bg-[#E8293A] py-2.5 font-semibold text-white hover:bg-red-700 disabled:opacity-50"
-        >
-          {loading ? 'Connexion...' : 'Se connecter'}
-        </button>
-      </form>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
-        Accès réservé au personnel hospitalier. Contactez l'administrateur pour obtenir un compte.
-      </p>
+        <form onSubmit={handleSubmit} className="mt-10 space-y-5">
+          {error && (
+            <div className="rounded-3xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+              {error}
+            </div>
+          )}
 
-      {import.meta.env.DEV && (
-        <p className="mt-4 text-center text-sm">
-          <Link to="/dev-setup" className="font-medium text-orange-600 hover:underline">
-            Setup dev — créer admin CHU automatiquement
-          </Link>
+          <div className="space-y-5">
+            <label className="block text-sm font-semibold text-slate-700">
+              Email
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-3 w-full rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#E8293A] focus:bg-white focus:ring-2 focus:ring-[#E8293A]/20"
+              />
+            </label>
+
+            <label className="block text-sm font-semibold text-slate-700">
+              Mot de passe
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-3 w-full rounded-[1.5rem] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#E8293A] focus:bg-white focus:ring-2 focus:ring-[#E8293A]/20"
+              />
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-full bg-gradient-to-r from-[#E8293A] to-[#f97316] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#E8293A]/20 transition duration-300 hover:-translate-y-0.5 hover:shadow-[#E8293A]/30 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
+        </form>
+      </div>
+
+      <div className="relative rounded-[2rem] border border-slate-200/80 bg-white/90 p-6 text-center shadow-[0_30px_80px_-40px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+        <div className="absolute left-4 top-4 h-14 w-14 rounded-full bg-[#f8fafc] shadow-inner" />
+        <p className="text-sm leading-6 text-slate-600">
+          Accès réservé au personnel hospitalier. Contactez l'administrateur pour obtenir un compte.
         </p>
-      )}
+
+        {import.meta.env.DEV && (
+          <p className="mt-4 text-sm">
+            <Link
+              to="/dev-setup"
+              className="inline-flex items-center justify-center gap-2 rounded-full border border-[#E8293A] px-5 py-3 text-sm font-semibold text-[#E8293A] transition hover:border-[#be123c] hover:bg-[#fee2e2] hover:text-[#be123c]"
+            >
+              Setup dev — créer admin CHU automatiquement
+            </Link>
+          </p>
+        )}
+      </div>
+    </div>
+
+        <div className="relative space-y-4">
+          <p className="inline-flex rounded-full bg-[#eef2ff] px-4 py-1 text-xs uppercase tracking-[0.28em] text-[#4338ca]">
+            Espace administrateur
+          </p>
+          <div className="space-y-2">
+            <h1 className="text-4xl font-semibold tracking-tight text-slate-950">Connexion</h1>
+            <p className="max-w-xl text-sm leading-7 text-slate-600">
+              Accédez à votre espace AMAL avec une interface fluide et sécurisée.
+            </p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="mt-10 space-y-5">
+          {error && (
+            <div className="rounded-3xl border border-red-100 bg-red-50 px-4 py-3 text-sm text-red-700 shadow-sm">
+              {error}
+            </div>
+          )}
+
+          <div className="space-y-5">
+            <label className="block text-sm font-semibold text-slate-700">
+              Email
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#E8293A] focus:bg-white focus:ring-2 focus:ring-[#E8293A]/20"
+              />
+            </label>
+
+            <label className="block text-sm font-semibold text-slate-700">
+              Mot de passe
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="mt-2 w-full rounded-3xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-[#E8293A] focus:bg-white focus:ring-2 focus:ring-[#E8293A]/20"
+              />
+            </label>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-3xl bg-gradient-to-r from-[#E8293A] to-[#f97316] px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-[#E8293A]/20 transition duration-300 hover:-translate-y-0.5 hover:shadow-[#E8293A]/30 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {loading ? 'Connexion...' : 'Se connecter'}
+          </button>
+        </form>
+      </div>
+
+      <div className="rounded-[1.75rem] border border-slate-200/80 bg-white/85 p-6 text-center shadow-[0_30px_80px_-40px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+        <p className="text-sm leading-6 text-slate-600">
+          Accès réservé au personnel hospitalier. Contactez l'administrateur pour obtenir un compte.
+        </p>
+
+        {import.meta.env.DEV && (
+          <p className="mt-4 text-sm">
+            <Link to="/dev-setup" className="font-semibold text-[#E8293A] transition hover:text-[#be123c]">
+              Setup dev — créer admin CHU automatiquement
+            </Link>
+          </p>
+        )}
+      </div>
     </div>
   )
 }

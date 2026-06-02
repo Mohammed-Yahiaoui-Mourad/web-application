@@ -86,3 +86,115 @@ textarea:focus-visible {
 .fade-in-up {
   animation: fadeInUp .6s ease both;
 }
+
+@keyframes pageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.988);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.page-transition {
+  animation: pageFadeIn .55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.page-surface {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(18px);
+}
+
+@keyframes authBlob {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(12px, -18px) scale(1.05);
+  }
+}
+
+@keyframes authDrift {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateY(-14px) scale(1.06);
+    opacity: 1;
+  }
+}
+
+.auth-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background-image:
+    radial-gradient(circle at 20% 18%, rgba(99, 102, 241, 0.22), transparent 24%),
+    radial-gradient(circle at 80% 22%, rgba(248, 113, 113, 0.16), transparent 20%),
+    radial-gradient(circle at 35% 75%, rgba(34, 211, 238, 0.12), transparent 18%),
+    linear-gradient(180deg, rgba(248, 250, 252, 0.96), rgba(241, 245, 249, 0.96));
+}
+
+.auth-background::before,
+.auth-background::after {
+  content: '';
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(64px);
+  opacity: 0.55;
+}
+
+.auth-background::before {
+  width: 360px;
+  height: 360px;
+  top: -8%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.24), transparent 60%);
+  animation: authBlob 12s ease-in-out infinite;
+}
+
+.auth-background::after {
+  width: 280px;
+  height: 280px;
+  bottom: -8%;
+  right: -10%;
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.18), transparent 60%);
+  animation: authBlob 14s ease-in-out infinite alternate;
+}
+
+.auth-decor {
+  position: absolute;
+  border-radius: 9999px;
+  opacity: 0.18;
+  filter: blur(24px);
+}
+
+.auth-decor.one {
+  width: 220px;
+  height: 220px;
+  top: 22%;
+  left: 4%;
+  background: rgba(16, 185, 129, 0.18);
+  animation: authDrift 10s ease-in-out infinite;
+}
+
+.auth-decor.two {
+  width: 180px;
+  height: 180px;
+  top: 62%;
+  right: 6%;
+  background: rgba(248, 113, 113, 0.16);
+  animation: authDrift 11s ease-in-out infinite reverse;
+}
+
+.auth-decor.three {
+  width: 140px;
+  height: 140px;
+  top: 44%;
+  left: 48%;
+  background: rgba(59, 130, 246, 0.14);
+  animation: authDrift 12s ease-in-out infinite;
+}
