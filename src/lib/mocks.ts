@@ -502,6 +502,53 @@ export const MOCK_APPOINTMENTS = [
   },
 ]
 
+export const MOCK_TEAM_MEMBERS = [
+  {
+    id: 'tm-1',
+    first_name: 'Samia',
+    last_name: 'Khelifi',
+    role: 'Coordinatrice de collecte',
+    department: 'Banque du sang',
+    email: 'samia.khelifi@amal.dz',
+    phone: '021734001',
+    status: 'active',
+    shift: '06:00 - 14:00',
+  },
+  {
+    id: 'tm-2',
+    first_name: 'Nabil',
+    last_name: 'Saadi',
+    role: 'Infirmier référent',
+    department: 'Salle collecte 2',
+    email: 'nabil.saadi@amal.dz',
+    phone: '021734002',
+    status: 'active',
+    shift: '08:00 - 16:00',
+  },
+  {
+    id: 'tm-3',
+    first_name: 'Yasmine',
+    last_name: 'Ferhat',
+    role: 'Technicienne laboratoire',
+    department: 'Immuno-hématologie',
+    email: 'yasmine.ferhat@amal.dz',
+    phone: '021734003',
+    status: 'active',
+    shift: '07:00 - 15:00',
+  },
+  {
+    id: 'tm-4',
+    first_name: 'Ines',
+    last_name: 'Hadj',
+    role: 'Cadre administratif',
+    department: 'Admissions dons',
+    email: 'ines.hadj@amal.dz',
+    phone: '021734004',
+    status: 'pending',
+    shift: '09:00 - 17:00',
+  },
+]
+
 export const MOCK_HOSPITALS = [
   { id: 'mock-hospital-id', name: 'CHU Mustapha Pacha', region: 'Alger', address: 'Place du 1er Mai' },
   { id: 'h-2', name: 'EPH Bologhine', region: 'Alger', address: 'Bologhine' },
@@ -518,4 +565,5 @@ export const MOCK_RESPONSES: Record<string, any> = {
   '/api/auth/profile': MOCK_USER,
   '/api/admin/appointments': MOCK_APPOINTMENTS,
   '/api/admin/donors': MOCK_DONORS,
+  '/api/admin/team': MOCK_TEAM_MEMBERS,
 }

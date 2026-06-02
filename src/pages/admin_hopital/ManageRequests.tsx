@@ -54,7 +54,7 @@ export default function ManageRequests() {
 
       setPatients(nextPatients)
       setSelectedRequestId((current) =>
-        current && nextRequests.some((request) => request.id === current) ? current : nextRequests[0]?.id || null
+        current && nextRequests.some((request) => request.id === current) ? current : null
       )
     } catch (error: any) {
       console.error('loadAll error:', error)

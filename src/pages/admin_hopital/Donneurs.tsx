@@ -50,7 +50,9 @@ export default function Donneurs() {
 
       setDonors(nextDonors)
       setAppointments(nextAppointments)
-      setSelectedDonorId(nextDonors[0]?.id || null)
+      setSelectedDonorId((current) =>
+        current && nextDonors.some((donor) => donor.id === current) ? current : null
+      )
     } catch (error) {
       console.error('loadData error:', error)
     }

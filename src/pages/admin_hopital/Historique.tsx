@@ -28,7 +28,9 @@ export default function Historique() {
         (appointment: any) => appointment.status === 'completed' || appointment.status === 'cancelled'
       )
       setHistory(operations)
-      setSelectedOperationId(operations[0]?.id || null)
+      setSelectedOperationId((current) =>
+        current && operations.some((operation) => operation.id === current) ? current : null
+      )
     } catch (error) {
       console.error('loadHistory error:', error)
     }

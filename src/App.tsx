@@ -9,6 +9,7 @@ import ManageRequests from './pages/admin_hopital/ManageRequests'
 import Planning from './pages/admin_hopital/Planning'
 import Donneurs from './pages/admin_hopital/Donneurs'
 import Historique from './pages/admin_hopital/Historique'
+import Team from './pages/admin_hopital/Team'
 import Profile from './pages/Profile'
 import Login from './pages/auth/Login'
 import DevSetup from './pages/auth/DevSetup'
@@ -90,6 +91,14 @@ export default function App() {
               element={
                 <ProtectedRoute allowedRoles={['admin_hopital']}>
                   <Historique />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-hopital/equipe"
+              element={
+                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                  <Team />
                 </ProtectedRoute>
               }
             />
