@@ -41,23 +41,23 @@ export default function DevSetup() {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000'
       addLog(`Backend : ${backendUrl}`)
 
-      // 1. Register admin@amal.org (Super Admin) if not existing
-      addLog('Enregistrement Super Admin (admin@amal.org)...')
+      // 1. Register root admin (admin@amal.org) if not existing
+      addLog('Enregistrement admin racine (admin@amal.org)...')
       try {
         await api.post('/api/auth/register', {
           email: 'admin@amal.org',
           password: 'admin_password_123',
-          full_name: 'Super Admin',
+          full_name: 'Root Admin',
           phone_number: '0500000000',
           is_donor: false
         })
-        addLog('Super Admin créé.')
+        addLog('Admin racine créé.')
       } catch (err) {
-        addLog('Super Admin déjà existant (ou erreur ignorée).')
+        addLog('Admin racine déjà existant (ou erreur ignorée).')
       }
 
-      // 2. Log in as Super Admin
-      addLog('Connexion en tant que Super Admin...')
+      // 2. Log in as Root Admin
+      addLog('Connexion en tant que Root Admin...')
       const loginParams = new URLSearchParams()
       loginParams.append('username', 'admin@amal.org')
       loginParams.append('password', 'admin_password_123')
@@ -82,7 +82,7 @@ export default function DevSetup() {
         addLog(`Note: ${err.message || 'Admin hôpital déjà existant.'}`)
       }
 
-      // 5. Log out Super Admin, and Log in as the new Hospital Admin
+      // 5. Log out Root Admin, and Log in as the new Hospital Admin
       addLog(`Connexion en tant que : ${email}...`)
       const chuParams = new URLSearchParams()
       chuParams.append('username', email)
@@ -109,7 +109,7 @@ export default function DevSetup() {
     <div className="mx-auto max-w-lg">
       <h1 className="mb-2 text-2xl font-bold text-[#E8293A]">Setup dev — Admin CHU</h1>
       <p className="mb-4 text-sm text-gray-600">
-        Crée le compte Super Admin, l&apos;hôpital, l&apos;administrateur et se connecte automatiquement en un clic.
+        Crée le compte admin racine, l&apos;hôpital, l&apos;administrateur et se connecte automatiquement en un clic.
       </p>
 
       <div className="mb-4 space-y-3 rounded-xl bg-white p-6 shadow">

@@ -30,9 +30,9 @@ export default function Login() {
         throw new Error('Profil non configuré.')
       }
 
-      if (!['admin_hopital', 'super_admin', 'admin'].includes(profile.role)) {
+      if (profile.role !== 'admin_hopital') {
         throw new Error(
-          "Accès réservé aux administrateurs hôpital / super admin. Les patients et donneurs doivent utiliser l'application mobile."
+          "Accès réservé aux administrateurs hôpital. Les patients et donneurs doivent utiliser l'application mobile."
         )
       }
 

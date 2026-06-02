@@ -2,10 +2,6 @@ import { NavLink } from 'react-router-dom'
 import useAuthStore from '../store/useAuthStore'
 
 const roleLinks = {
-  super_admin: [
-    { to: '/super-admin', label: 'Dashboard', icon: '🏠' },
-    { to: '/super-admin/creer-admin', label: 'Créer admin hôpital', icon: '👤' },
-  ],
   admin_hopital: [
     { to: '/admin-hopital', label: 'Dashboard', icon: '🏥' },
     { to: '/admin-hopital/demandes', label: 'Demandes', icon: '📋' },
@@ -18,7 +14,6 @@ const guestLinks = [
 ]
 
 const roleLabels = {
-  super_admin: 'Super administrateur',
   admin_hopital: 'Administrateur hôpital',
 }
 
