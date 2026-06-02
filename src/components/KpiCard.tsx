@@ -1,17 +1,46 @@
-export default function KpiCard({ label, value, subtext, icon, bgColor = 'white', textColor = 'text-slate-900', accentColor = 'text-[#E8293A]' }) {
+import React from 'react'
+import { LucideIcon } from 'lucide-react'
+
+interface KpiCardProps {
+  label: string
+  value: string | number
+  subtext?: string
+  icon?: LucideIcon
+  bgColor?: string
+  textColor?: string
+  iconColor?: string
+}
+
+export default function KpiCard({ 
+  label, 
+  value, 
+  subtext, 
+  icon: Icon, 
+  bgColor = 'bg-white', 
+  textColor = 'text-slate-900',
+  iconColor = 'text-[#E8293A]'
+}: KpiCardProps) {
   return (
-    <div className={`rounded-xl border border-gray-200 ${bgColor} p-6 shadow-sm transition hover:shadow-md`}>
-      {/* Label & Icon */}
+    <div className={`rounded-[32px] border border-slate-100 ${bgColor} p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5`}>
       <div className="flex items-start justify-between">
-        <p className="text-sm font-medium text-gray-600">{label}</p>
-        {icon && <span className="text-xl">{icon}</span>}
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{label}</p>
+          <p className={`text-3xl font-black ${textColor}`}>{value}</p>
+        </div>
+        {Icon && (
+          <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-50 ${iconColor} border border-slate-100 shadow-sm`}>
+            <Icon size={24} strokeWidth={2.5} />
+          </div>
+        )}
       </div>
 
-      {/* Value */}
-      <p className={`mt-3 text-4xl font-bold ${textColor}`}>{value}</p>
-
-      {/* Subtext */}
-      {subtext && <p className="mt-2 text-xs text-gray-500">{subtext}</p>}
+      {subtext && (
+        <div className="mt-4 pt-4 border-t border-slate-50">
+          <p className="text-xs font-bold text-slate-500 flex items-center gap-1.5 uppercase tracking-tight">
+            {subtext}
+          </p>
+        </div>
+      )}
     </div>
   )
 }

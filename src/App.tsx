@@ -1,3 +1,4 @@
+import React from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
 import useAuthStore from './store/useAuthStore'
@@ -5,7 +6,9 @@ import Layout from './components/Layout'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminHopitalDashboard from './pages/admin_hopital/Dashboard'
 import ManageRequests from './pages/admin_hopital/ManageRequests'
-import Tools from './pages/admin_hopital/Tools'
+import Planning from './pages/admin_hopital/Planning'
+import Donneurs from './pages/admin_hopital/Donneurs'
+import Historique from './pages/admin_hopital/Historique'
 import Profile from './pages/Profile'
 import Login from './pages/auth/Login'
 import DevSetup from './pages/auth/DevSetup'
@@ -31,9 +34,9 @@ function RoleRedirect() {
   return <Navigate to="/login" replace />
 }
 
-function AuthBootstrap({ children }) {
+function AuthBootstrap({ children }: { children: React.ReactNode }) {
   useAuth()
-  return children
+  return <>{children}</>
 }
 
 export default function App() {
@@ -67,10 +70,26 @@ export default function App() {
               }
             />
             <Route
-              path="/admin-hopital/tools"
+              path="/admin-hopital/planning"
               element={
                 <ProtectedRoute allowedRoles={['admin_hopital']}>
-                  <Tools />
+                  <Planning />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-hopital/donneurs"
+              element={
+                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                  <Donneurs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin-hopital/historique"
+              element={
+                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                  <Historique />
                 </ProtectedRoute>
               }
             />

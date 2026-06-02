@@ -9,7 +9,15 @@ export function useAuth() {
     let mounted = true
 
     async function init() {
-      const token = localStorage.getItem('access_token')
+      let token = localStorage.getItem('access_token')
+      
+      // Auto-mock login for development
+      if (!token && import.meta.env.DEV) {
+        token = 'mock-token'
+        localStorage.setItem('access_token', token)
+        console.log('[MOCK] Auto-logged in for development')
+      }
+
       if (!token) {
         setUser(null)
         setProfile(null)
