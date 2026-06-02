@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { createPortal } from 'react-dom'
 import { NavLink } from 'react-router-dom'
 import { 
   LayoutDashboard, 
@@ -37,9 +38,27 @@ export default function Sidebar() {
   const roleLabel = profile ? roleLabels[profile.role] || profile.role || 'Utilisateur' : 'Invité'
   const userName = profile ? `${profile.first_name} ${profile.last_name}` : 'Bienvenue'
   const initials = getInitials(userName)
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [logoutConfirm, setLogoutConfirm] = useState(false)
+
+  const showToast = (text: string, type: 'success' | 'error') => {
+    setToast({ text, type })
+    window.setTimeout(() => setToast(null), 3600)
+  }
+
+  const handleSignOut = async () => {
+    setLogoutConfirm(false)
+
+    try {
+      await signOut()
+      showToast('Vous êtes déconnecté avec succès.', 'success')
+    } catch (error: any) {
+      showToast(error?.message || 'Impossible de se déconnecter.', 'error')
+    }
+  }
 
   return (
-    <aside className="flex h-screen w-[264px] flex-col border-r border-slate-200/80 bg-white/96 px-4 py-5 backdrop-blur-xl">
+    <aside className="flex h-screen w-[264px] max-h-screen flex-col border-r border-slate-200/80 bg-white/96 px-4 py-5 overflow-y-auto overscroll-contain backdrop-blur-xl">
       <div className="space-y-5">
         <div className="px-1">
           <div className="rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm card-smooth hover-float">
@@ -127,7 +146,7 @@ export default function Sidebar() {
 
           <button
             type="button"
-            onClick={signOut}
+            onClick={() => setLogoutConfirm(true)}
             className="flex w-full items-center gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-950"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-500">
@@ -135,6 +154,63 @@ export default function Sidebar() {
             </span>
             Déconnexion
           </button>
+        </div>
+      ) : null}
+
+      {logoutConfirm ? createPortal(
+        <div className="fixed inset-0 z-50 flex min-h-screen w-full items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-2xl rounded-[32px] border border-slate-200 bg-white px-8 py-10 shadow-[0_50px_120px_-60px_rgba(15,23,42,0.45)]">
+            <div className="mx-auto flex max-w-md flex-col items-center gap-6 text-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100 text-3xl text-amber-700 shadow-sm">
+                ?
+              </div>
+              <div>
+                <p className="text-3xl font-semibold tracking-tight text-slate-950">Confirmer la déconnexion</p>
+                <p className="mt-3 text-base leading-7 text-slate-600 sm:text-lg">
+                  Voulez-vous vraiment vous déconnecter de votre session actuelle ?
+                </p>
+              </div>
+              <div className="flex w-full flex-col items-center gap-3 sm:flex-row sm:justify-center">
+                <button
+                  type="button"
+                  onClick={() => setLogoutConfirm(false)}
+                  className="inline-flex min-w-[140px] items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300"
+                >
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="inline-flex min-w-[140px] items-center justify-center rounded-2xl bg-rose-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                >
+                  Confirmer
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      ) : null}
+
+      {toast ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4">
+          <div
+            className="w-full max-w-3xl rounded-[32px] border px-8 py-10 shadow-2xl"
+            style={{
+              backgroundColor: toast.type === 'success' ? 'rgba(236, 253, 245, 0.98)' : 'rgba(254, 242, 242, 0.98)',
+              borderColor: toast.type === 'success' ? '#34d399' : '#fca5a5',
+            }}
+          >
+            <div className="flex flex-col items-center gap-6 text-center">
+              <span className={`inline-flex h-16 w-16 items-center justify-center rounded-3xl text-3xl ${toast.type === 'success' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`}>
+                {toast.type === 'success' ? '✓' : '!'}
+              </span>
+              <div>
+                <p className="text-2xl font-semibold text-slate-950">{toast.type === 'success' ? 'Succès' : 'Erreur'}</p>
+                <p className="mt-3 text-base leading-7 text-slate-700">{toast.text}</p>
+              </div>
+            </div>
+          </div>
         </div>
       ) : null}
     </aside>

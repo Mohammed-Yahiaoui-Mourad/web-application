@@ -4,7 +4,7 @@ import Sidebar from './Sidebar'
 
 export default function Layout() {
   const location = useLocation()
-  const hideSidebar = location.pathname === '/login'
+  const hideSidebar = location.pathname === '/login' || location.pathname === '/dev-setup'
 
   if (hideSidebar) {
     return (

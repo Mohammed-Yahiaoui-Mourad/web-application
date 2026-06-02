@@ -24,11 +24,11 @@ const useAuthStore = create<AuthStore>((set) => ({
   fetchProfile: async () => {
     try {
       const data = await api.get('/api/auth/me')
-      set({ profile: data })
+      set({ profile: data, user: data ? { email: data.email, id: data.id } : null })
       return data
     } catch (error) {
       console.error('fetchProfile error:', error)
-      set({ profile: null })
+      set({ profile: null, user: null })
       return null
     }
   },
