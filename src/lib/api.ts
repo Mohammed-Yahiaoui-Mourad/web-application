@@ -1,9 +1,10 @@
 import { MOCK_RESPONSES } from './mocks';
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8000';
-const USE_MOCKS = import.meta.env.DEV || import.meta.env.VITE_USE_MOCKS === 'true';
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://127.0.0.1:8000';
+const USE_MOCKS = import.meta.env.VITE_USE_MOCKS !== 'false' && (import.meta.env.DEV || import.meta.env.VITE_USE_MOCKS === 'true');
 
 async function fetchFromBackend(endpoint: string, method = 'GET', body: any = null) {
+  console.log("DEBUG: BACKEND_URL is", BACKEND_URL, "Fetching", endpoint);
   // Mock Interception
   if (USE_MOCKS) {
     const cleanEndpoint = endpoint.split('?')[0];
@@ -41,6 +42,7 @@ async function fetchFromBackend(endpoint: string, method = 'GET', body: any = nu
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
+    console.log("DEBUG: Sending token:", token.substring(0, 15) + "...");
   }
 
   const options: RequestInit = {
@@ -57,7 +59,9 @@ async function fetchFromBackend(endpoint: string, method = 'GET', body: any = nu
     
     if (response.status === 401) {
       localStorage.removeItem('access_token');
-      window.location.href = '/login';
+      if (window.location.pathname !== '/dev-setup' && window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
       throw new Error('Session expirée. Veuillez vous reconnecter.');
     }
 
@@ -66,7 +70,11 @@ async function fetchFromBackend(endpoint: string, method = 'GET', body: any = nu
       throw new Error(errData.detail || `Erreur serveur (${response.status})`);
     }
 
-    return response.json();
+    const resJson = await response.json();
+    if (resJson && typeof resJson === 'object' && resJson.success === true && 'data' in resJson) {
+      return resJson.data;
+    }
+    return resJson;
   } catch (error) {
     // If backend fails and we are in dev, fallback to mocks if available
     if (USE_MOCKS) {

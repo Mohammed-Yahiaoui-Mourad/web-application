@@ -12,7 +12,8 @@ export function useAuth() {
       let token = localStorage.getItem('access_token')
       
       // Auto-mock login for development
-      if (!token && import.meta.env.DEV) {
+      const useMocks = import.meta.env.VITE_USE_MOCKS !== 'false';
+      if (!token && import.meta.env.DEV && useMocks) {
         token = 'mock-token'
         localStorage.setItem('access_token', token)
         console.log('[MOCK] Auto-logged in for development')

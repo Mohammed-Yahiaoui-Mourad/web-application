@@ -72,7 +72,6 @@ export default function Team() {
         title="Équipe hospitalière"
         subtitle="Ajoutez des coordinateurs, infirmiers et personnels de support pour structurer l’organisation interne du site."
         hideSearch
-        hideActions
         actions={
           <button
             type="button"

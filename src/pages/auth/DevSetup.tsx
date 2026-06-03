@@ -22,11 +22,11 @@ export default function DevSetup() {
   async function getHospitalId() {
     const hospitals = await api.get('/api/admin/hospitals')
     const found = hospitals.find(
-      (h: any) => h.name === 'CHU 1er Novembre' && h.region === 'Oran'
+      (h: any) => h.name === 'EHU USTO - 1 Novembre' && h.region === 'Oran'
     )
     if (!found) {
       throw new Error(
-        "Hôpital 'CHU 1er Novembre' introuvable dans la base. Assurez-vous que le backend est démarré et a auto-semé les hôpitaux."
+        "Hôpital 'EHU USTO - 1 Novembre' introuvable dans la base. Assurez-vous que le backend est démarré et a auto-semé les hôpitaux."
       )
     }
     addLog(`Hôpital trouvé : ${found.name} (${found.id})`)
@@ -46,7 +46,7 @@ export default function DevSetup() {
       try {
         await api.post('/api/auth/register', {
           email: 'admin@amal.org',
-          password: 'admin_password_123',
+          password: 'admin123',
           full_name: 'Root Admin',
           phone_number: '0500000000',
           is_donor: false
@@ -60,7 +60,7 @@ export default function DevSetup() {
       addLog('Connexion en tant que Root Admin...')
       const loginParams = new URLSearchParams()
       loginParams.append('username', 'admin@amal.org')
-      loginParams.append('password', 'admin_password_123')
+      loginParams.append('password', 'admin123')
       const adminToken = await api.post('/api/auth/login', loginParams)
       localStorage.setItem('access_token', adminToken.access_token)
 

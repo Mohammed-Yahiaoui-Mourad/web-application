@@ -18,6 +18,7 @@ import {
   getSeverityMeta,
 } from '../../lib/hospitalUtils'
 import useAuthStore from '../../store/useAuthStore'
+import { useRequestsRealtime } from '../../hooks/useRealtime'
 
 export default function ManageRequests() {
   const profile = useAuthStore((state) => state.profile)
@@ -27,6 +28,9 @@ export default function ManageRequests() {
   const [message, setMessage] = useState('')
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+
+  // Subscribes to real-time blood request broadcast updates
+  useRequestsRealtime(loadAll)
 
   useEffect(() => {
     loadAll()
