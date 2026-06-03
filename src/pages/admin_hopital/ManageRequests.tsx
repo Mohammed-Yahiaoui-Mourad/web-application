@@ -7,7 +7,7 @@ import {
   Send,
   ShieldAlert,
 } from 'lucide-react'
-import { api } from '../../lib/api'
+import { adminService, type BloodRequest } from '../../services/api-service'
 import DetailDrawer from '../../components/DetailDrawer'
 import FilterBar from '../../components/FilterBar'
 import RequestsTable from '../../components/RequestsTable'
@@ -18,14 +18,13 @@ import {
   getSeverityMeta,
 } from '../../lib/hospitalUtils'
 import useAuthStore from '../../store/useAuthStore'
-import { useRequestsRealtime } from '../../hooks/useRealtime'
+import toast from 'react-hot-toast'
 
 export default function ManageRequests() {
   const profile = useAuthStore((state) => state.profile)
   const [requests, setRequests] = useState<any[]>([])
   const [patients, setPatients] = useState<Record<string, any>>({})
   const [filters, setFilters] = useState<any>({})
-  const [message, setMessage] = useState('')
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -62,7 +61,7 @@ export default function ManageRequests() {
       )
     } catch (error: any) {
       console.error('loadAll error:', error)
-      setMessage(error?.message || 'Impossible de charger les demandes.')
+      toast.error(error?.message || 'Impossible de charger les demandes.')
     }
   }
 
@@ -70,10 +69,10 @@ export default function ManageRequests() {
     setSubmitting(true)
     try {
       const response = await api.post(`/api/admin/requests/${requestId}/broadcast`)
-      setMessage(`${response.data || 0} donneur(s) contacté(s) pour cette demande.`)
+      toast.success(`${response.data || 0} donneur(s) contacté(s) pour cette demande.`)
       await loadAll()
     } catch (error: any) {
-      setMessage(error?.message || 'Échec de la diffusion de l’alerte.')
+      toast.error(error?.message || 'Échec de la diffusion de l’alerte.')
     } finally {
       setSubmitting(false)
     }
@@ -83,10 +82,10 @@ export default function ManageRequests() {
     setSubmitting(true)
     try {
       await api.patch(`/api/admin/requests/${requestId}/status?status_update=${status}`)
-      setMessage(status === 'fulfilled' ? 'La demande a été marquée comme complétée.' : 'Statut mis à jour.')
+      toast.success(status === 'fulfilled' ? 'La demande a été marquée comme complétée.' : 'Statut mis à jour.')
       await loadAll()
     } catch (error: any) {
-      setMessage(error?.message || 'Impossible de mettre à jour le statut.')
+      toast.error(error?.message || 'Impossible de mettre à jour le statut.')
     } finally {
       setSubmitting(false)
     }
@@ -151,12 +150,6 @@ export default function ManageRequests() {
         />
       </div>
 
-      {message ? (
-        <div className="mx-8 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-800">
-          {message}
-        </div>
-      ) : null}
-
       <div className="mx-8">
         <FilterBar filters={filters} onFilterChange={handleFilterChange} bloodTypes={bloodTypes} />
       </div>
@@ -182,37 +175,11 @@ export default function ManageRequests() {
           ) : null
         }
         onClose={() => setSelectedRequestId(null)}
-        footer={
-          selectedRequest ? (
-            <div className="flex flex-wrap justify-end gap-3">
-              {(selectedRequest.status === 'active' || selectedRequest.status === 'partially_fulfilled') && (
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => handleAction(selectedRequest.id, 'assign')}
-                  className="flex items-center gap-2 rounded-2xl bg-[#c73b42] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b02d35] disabled:opacity-60"
-                >
-                  <Send size={16} />
-                  Alerter les donneurs
-                </button>
-              )}
-              {(selectedRequest.status === 'active' || selectedRequest.status === 'partially_fulfilled') && (
-                <button
-                  type="button"
-                  disabled={submitting}
-                  onClick={() => handleAction(selectedRequest.id, 'validate')}
-                  className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 disabled:opacity-60"
-                >
-                  Marquer comme complétée
-                </button>
-              )}
-            </div>
-          ) : null
-        }
+        footer={null}
       >
         {selectedRequest ? (
-          <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
               <InfoCard
                 label="Priorité clinique"
                 value={severity.label}
@@ -226,9 +193,9 @@ export default function ManageRequests() {
               />
             </div>
 
-            <section className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Contexte patient</h3>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <section className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Contexte patient</h3>
+              <div className="mt-2 grid gap-3 sm:grid-cols-2">
                 <Field label="Service" value={selectedRequest.department} />
                 <Field label="Salle" value={selectedRequest.room} />
                 <Field label="Médecin référent" value={selectedRequest.attending_physician} />
@@ -240,16 +207,16 @@ export default function ManageRequests() {
               </div>
             </section>
 
-            <section className="rounded-[24px] border border-slate-200 bg-white p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Observations</h3>
-              <p className="mt-3 text-sm leading-7 text-slate-700">
+            <section className="rounded-[24px] border border-slate-200 bg-white p-3">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Observations</h3>
+              <p className="mt-2 text-sm leading-6 text-slate-700">
                 {selectedRequest.notes || 'Aucune note clinique complémentaire.'}
               </p>
             </section>
 
-            <section className="rounded-[24px] border border-slate-200 bg-white p-5">
-              <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Plan opérationnel</h3>
-              <div className="mt-4 space-y-4">
+            <section className="rounded-[24px] border border-slate-200 bg-white p-3">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Plan opérationnel</h3>
+              <div className="mt-2 space-y-2">
                 <TimelineRow
                   icon={AlertTriangle}
                   title="Validation du besoin"
@@ -267,7 +234,27 @@ export default function ManageRequests() {
                 />
               </div>
             </section>
-          </div>
+            {(selectedRequest.status === 'active' || selectedRequest.status === 'partially_fulfilled') && (
+              <div className="flex flex-wrap gap-3 sm:flex-nowrap -mb-96">
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => handleAction(selectedRequest.id, 'assign')}
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-[#c73b42] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b02d35] disabled:opacity-60"
+                >
+                  <Send size={16} />
+                  Alerter les donneurs
+                </button>
+                <button
+                  type="button"
+                  disabled={submitting}
+                  onClick={() => handleAction(selectedRequest.id, 'validate')}
+                  className="flex flex-1 items-center justify-center rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 disabled:opacity-60"
+                >
+                  Marquer comme complétée
+                </button>
+              </div>
+            )}          </div>
         ) : null}
       </DetailDrawer>
     </div>

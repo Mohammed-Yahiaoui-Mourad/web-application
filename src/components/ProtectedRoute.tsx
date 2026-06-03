@@ -4,8 +4,9 @@ import useAuthStore from '../store/useAuthStore'
 import { ROLE_ROUTES } from '../constants'
 
 export default function ProtectedRoute({ children, allowedRoles }) {
-  const { user, profile, loading } = useAuthStore()
+  const { user, profile, loading, token } = useAuthStore()
 
+  // If still initializing, show loading spinner
   if (loading) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
@@ -14,11 +15,25 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     )
   }
 
-  if (!user) {
+  // Check if we have token but user not set yet - don't redirect immediately
+  const hasToken = !!token || !!localStorage.getItem('access_token')
+  
+  // If no token and no user, redirect to login
+  if (!user && !hasToken) {
     return <Navigate to="/login" replace />
   }
 
   if (!profile) {
+    // If we have a token, show loading or profile missing message
+    if (hasToken) {
+      return (
+        <div className="flex min-h-[50vh] items-center justify-center">
+          <div className="rounded-xl bg-white p-8 text-center shadow">
+            <p className="text-gray-700">Chargement du profil...</p>
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="rounded-xl bg-white p-8 text-center shadow">
         <p className="text-gray-700">Profil introuvable. Contactez l&apos;administrateur.</p>

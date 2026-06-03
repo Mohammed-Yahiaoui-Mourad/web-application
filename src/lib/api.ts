@@ -67,11 +67,15 @@ async function fetchFromBackend(endpoint: string, method = 'GET', body: any = nu
 
     if (!response.ok) {
       const errData = await response.json().catch(() => ({}));
-      throw new Error(errData.detail || `Erreur serveur (${response.status})`);
+      const errorMsg = errData.error || errData.message || errData.detail || `Erreur serveur (${response.status})`;
+      throw new Error(errorMsg);
     }
 
     const resJson = await response.json();
-    if (resJson && typeof resJson === 'object' && resJson.success === true && 'data' in resJson) {
+    if (resJson && typeof resJson === 'object' && 'success' in resJson && 'data' in resJson) {
+      if (!resJson.success) {
+        throw new Error(resJson.error || resJson.message || 'Server error');
+      }
       return resJson.data;
     }
     return resJson;

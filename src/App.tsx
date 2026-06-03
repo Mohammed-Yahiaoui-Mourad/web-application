@@ -14,6 +14,7 @@ import Profile from './pages/Profile'
 import Login from './pages/auth/Login'
 import DevSetup from './pages/auth/DevSetup'
 import HospitalLayout from './layouts/HospitalLayout'
+import { Toaster } from 'react-hot-toast'
 
 function RoleRedirect() {
   const { user, profile, loading } = useAuthStore()
@@ -28,7 +29,7 @@ function RoleRedirect() {
 
   if (!user) return <Navigate to="/login" replace />
 
-  if (profile?.role === 'admin_hopital' || profile?.role === 'hospital') {
+  if (profile?.role === 'admin_hopital' || profile?.role === 'hospital' || profile?.role === 'admin') {
     return <Navigate to="/admin-hopital" replace />
   }
 
@@ -57,7 +58,7 @@ export default function App() {
             <Route
               path="/admin-hopital"
               element={
-                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                <ProtectedRoute allowedRoles={['admin_hopital', 'admin']}>
                   <AdminHopitalDashboard />
                 </ProtectedRoute>
               }
@@ -65,7 +66,7 @@ export default function App() {
             <Route
               path="/admin-hopital/demandes"
               element={
-                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                <ProtectedRoute allowedRoles={['admin_hopital', 'admin']}>
                   <ManageRequests />
                 </ProtectedRoute>
               }
@@ -73,7 +74,7 @@ export default function App() {
             <Route
               path="/admin-hopital/planning"
               element={
-                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                <ProtectedRoute allowedRoles={['admin_hopital', 'admin']}>
                   <Planning />
                 </ProtectedRoute>
               }
@@ -81,7 +82,7 @@ export default function App() {
             <Route
               path="/admin-hopital/donneurs"
               element={
-                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                <ProtectedRoute allowedRoles={['admin_hopital', 'admin']}>
                   <Donneurs />
                 </ProtectedRoute>
               }
@@ -89,7 +90,7 @@ export default function App() {
             <Route
               path="/admin-hopital/historique"
               element={
-                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                <ProtectedRoute allowedRoles={['admin_hopital', 'admin']}>
                   <Historique />
                 </ProtectedRoute>
               }
@@ -97,7 +98,7 @@ export default function App() {
             <Route
               path="/admin-hopital/equipe"
               element={
-                <ProtectedRoute allowedRoles={['admin_hopital']}>
+                <ProtectedRoute allowedRoles={['admin_hopital', 'admin']}>
                   <Team />
                 </ProtectedRoute>
               }
@@ -107,6 +108,7 @@ export default function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </AuthBootstrap>
+      <Toaster position="bottom-right" toastOptions={{ duration: 4000 }} />
     </BrowserRouter>
   )
 }

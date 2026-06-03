@@ -10,7 +10,8 @@ export default function Navbar() {
     <nav className="border-b border-gray-200 bg-white px-4 py-3 shadow-sm">
       <div className="mx-auto flex max-w-6xl items-center justify-between">
         <Link to={home} className="flex items-center gap-2 text-xl font-bold text-[#E8293A]">
-          <span>🩸</span> BloodMatch
+          <img src="/logo.png" alt="AMAL Logo" className="h-8 object-contain" />
+          <span>AMAL</span>
         </Link>
         {profile && (
           <div className="flex items-center gap-4">

@@ -19,6 +19,7 @@ export const WILAYAS = [
 ]
 
 export const ROLE_ROUTES = {
+  admin: '/admin-hopital',
   admin_hopital: '/admin-hopital',
 }
 

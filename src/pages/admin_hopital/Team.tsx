@@ -5,6 +5,7 @@ import Pagination from '../../components/Pagination'
 import Topbar from '../../components/Topbar'
 import { api } from '../../lib/api'
 import { getInitials } from '../../lib/hospitalUtils'
+import toast from 'react-hot-toast'
 
 const ITEMS_PER_PAGE = 5
 
@@ -23,7 +24,6 @@ export default function Team() {
   const [currentPage, setCurrentPage] = useState(1)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
-  const [message, setMessage] = useState('')
   const [saving, setSaving] = useState(false)
 
   useEffect(() => {
@@ -51,9 +51,9 @@ export default function Team() {
       setMembers((current) => [newMember, ...current])
       setForm(EMPTY_FORM)
       setDrawerOpen(false)
-      setMessage('Le nouveau membre a été ajouté à l’équipe hospitalière.')
+      toast.success('Le nouveau membre a été ajouté à l’équipe hospitalière.')
     } catch (error: any) {
-      setMessage(error?.message || 'Impossible d’ajouter ce membre.')
+      toast.error(error?.message || 'Impossible d’ajouter ce membre.')
     } finally {
       setSaving(false)
     }
@@ -89,10 +89,6 @@ export default function Team() {
         <TeamMetric title="Invitations en attente" value={members.filter((member) => member.status === 'pending').length} tone="bg-amber-50 border-amber-200" />
         <TeamMetric title="Services couverts" value={new Set(members.map((member) => member.department)).size} tone="bg-sky-50 border-sky-200" />
       </div>
-
-      {message ? (
-        <div className="mx-8 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-800">{message}</div>
-      ) : null}
 
       <div className="mx-8 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-6 py-5">

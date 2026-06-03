@@ -4,7 +4,6 @@ import {
   Mail,
   MapPin,
   Phone,
-  PhoneCall,
   Search,
   ShieldCheck,
   UserRound,
@@ -12,7 +11,7 @@ import {
 import DetailDrawer from '../../components/DetailDrawer'
 import Pagination from '../../components/Pagination'
 import Topbar from '../../components/Topbar'
-import { api } from '../../lib/api'
+import { adminService, type DonorProfile, type DonationSchedule } from '../../services/api-service'
 import {
   formatDate,
   formatDateTime,
@@ -20,15 +19,17 @@ import {
   getEligibility,
   getInitials,
 } from '../../lib/hospitalUtils'
+import toast from 'react-hot-toast'
 
 const ITEMS_PER_PAGE = 5
 
 export default function Donneurs() {
-  const [donors, setDonors] = useState<any[]>([])
-  const [appointments, setAppointments] = useState<any[]>([])
+  const [donors, setDonors] = useState<DonorProfile[]>([])
+  const [appointments, setAppointments] = useState<DonationSchedule[]>([])
   const [selectedDonorId, setSelectedDonorId] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -39,24 +40,26 @@ export default function Donneurs() {
   }, [search])
 
   async function loadData() {
+    setLoading(true)
     try {
       const [donorData, appointmentData] = await Promise.all([
-        api.get('/api/admin/donors'),
-        api.get('/api/admin/appointments'),
+        adminService.getDonors(),
+        adminService.getAppointments(),
       ])
 
-      const nextDonors = Array.isArray(donorData) ? donorData : []
-      const nextAppointments = Array.isArray(appointmentData) ? appointmentData : []
-
-      setDonors(nextDonors)
-      setAppointments(nextAppointments)
+      setDonors(donorData || [])
+      setAppointments(appointmentData || [])
       setSelectedDonorId((current) =>
-        current && nextDonors.some((donor) => donor.id === current) ? current : null
+        current && donorData?.some((donor) => donor.id === current) ? current : null
       )
     } catch (error) {
       console.error('loadData error:', error)
+      toast.error('Erreur lors du chargement des données')
+    } finally {
+      setLoading(false)
     }
   }
+
 
   const filteredDonors = donors.filter((donor) => {
     const query = search.toLowerCase()
@@ -73,7 +76,7 @@ export default function Donneurs() {
   const selectedDonor = donors.find((donor) => donor.id === selectedDonorId) || null
   const donorAppointments = appointments
     .filter((appointment) => appointment.donor_id === selectedDonor?.id)
-    .sort((first, second) => new Date(second.scheduled_time).getTime() - new Date(first.scheduled_time).getTime())
+    .sort((first, second) => new Date(second.scheduled_date).getTime() - new Date(first.scheduled_date).getTime())
   const eligibility = getEligibility(selectedDonor?.last_donation)
 
   return (
@@ -210,25 +213,7 @@ export default function Donneurs() {
           ) : null
         }
         onClose={() => setSelectedDonorId(null)}
-        footer={
-          selectedDonor ? (
-            <div className="flex flex-wrap justify-end gap-3">
-              <button
-                type="button"
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300"
-              >
-                Créer un rendez-vous
-              </button>
-              <button
-                type="button"
-                className="flex items-center gap-2 rounded-2xl bg-[#c73b42] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#b02d35]"
-              >
-                <PhoneCall size={16} />
-                Appeler le donneur
-              </button>
-            </div>
-          ) : null
-        }
+        footer={null}
       >
         {selectedDonor ? (
           <div className="space-y-6">
@@ -256,20 +241,20 @@ export default function Donneurs() {
 
             <section className="grid gap-4 sm:grid-cols-2">
               <DrawerMetric title="Âge" value={`${selectedDonor.age} ans`} />
-              <DrawerMetric title="Poids" value={`${selectedDonor.weight_kg} kg`} />
-              <DrawerMetric title="Dernier screening" value={formatDate(selectedDonor.last_screening)} />
-              <DrawerMetric title="Préférence contact" value={selectedDonor.preferred_contact} />
+              <DrawerMetric title="Genre" value={selectedDonor.gender === 'M' ? 'Homme' : selectedDonor.gender === 'F' ? 'Femme' : 'Non spécifié'} />
+              <DrawerMetric title="Dernier don" value={formatDate(selectedDonor.last_donation)} />
+              <DrawerMetric title="Préférence contact" value={selectedDonor.preferred_contact || 'Non spécifiée'} />
             </section>
 
             <section className="rounded-[24px] border border-slate-200 bg-white p-5">
               <h3 className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Informations opérationnelles</h3>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <DetailField label="Disponibilité" value={selectedDonor.availability} />
+                <DetailField label="Disponibilité" value={selectedDonor.is_available ? 'Disponible' : 'Indisponible'} />
                 <DetailField label="Total de dons" value={`${selectedDonor.total_donations}`} />
-                <DetailField label="Contact d’urgence" value={selectedDonor.emergency_contact_name} />
-                <DetailField label="Téléphone d’urgence" value={selectedDonor.emergency_contact_phone} />
+                <DetailField label="Wilaya" value={selectedDonor.wilaya} />
+                <DetailField label="Groupe sanguin" value={selectedDonor.blood_type} />
               </div>
-              <p className="mt-4 text-sm leading-6 text-slate-700">{selectedDonor.notes}</p>
+              <p className="mt-4 text-sm leading-6 text-slate-700">{selectedDonor.notes || 'Aucune note.'}</p>
             </section>
 
             <section className="rounded-[24px] border border-slate-200 bg-white p-5">
@@ -284,13 +269,13 @@ export default function Donneurs() {
                     <div key={appointment.id} className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <p className="font-semibold text-slate-900">{formatDateTime(appointment.scheduled_time)}</p>
+                          <p className="font-semibold text-slate-900">{formatDateTime(appointment.scheduled_date)}</p>
                           <p className="mt-1 text-sm text-slate-600">
-                            {appointment.room} • {appointment.assigned_nurse}
+                            Statut: {appointment.status}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-semibold text-slate-900">{appointment.units_expected || 1} poche(s)</p>
+                          <p className="text-sm font-semibold text-slate-900">Rendez-vous</p>
                           <p className="mt-1 text-sm text-slate-500">{appointment.status}</p>
                         </div>
                       </div>
