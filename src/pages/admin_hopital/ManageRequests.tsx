@@ -28,6 +28,9 @@ export default function ManageRequests() {
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
+  // Subscribes to real-time blood request broadcast updates
+  useRequestsRealtime(loadAll)
+
   useEffect(() => {
     loadAll()
   }, [profile?.hopital_id])

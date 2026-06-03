@@ -18,6 +18,7 @@ import {
   getSeverityMeta,
 } from '../../lib/hospitalUtils'
 import useAuthStore from '../../store/useAuthStore'
+import { useRequestsRealtime } from '../../hooks/useRealtime'
 
 const ITEMS_PER_PAGE = 4
 
@@ -26,6 +27,9 @@ export default function AdminHopitalDashboard() {
   const [requests, setRequests] = useState<any[]>([])
   const [appointments, setAppointments] = useState<any[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+
+  // Real-time SSE updates auto-reloader
+  useRequestsRealtime(loadData)
 
   useEffect(() => {
     if (profile?.hopital_id) {
